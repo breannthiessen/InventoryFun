@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <head>   
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Inventory Fun</title>
+    </head>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link href="main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <div id="title-div">
+        <ul>
+            <h1 id="page-title">Inventory Fun</h1>
+        </ul>
+    </div>
+
+    <div id="inventory-table">
+        <p>Current Items</p>
+        <table onload=""> 
+             <tr>
+              <th>Name</th>
+              <th>Weight (kg)</th>
+              <th>Width (cm)</th>
+              <th>Length (cm)</th>
+              <th>Height (cm)</th>
+            </tr>
+            <tbody name="inventory-table" id="inventory">
+            </tbody>
+          </table>
+    </div>
+
+    <div id="button-div">
+        <ul>
+            <button class="button" id="add-button">Add Item</button>
+            <button class="button" id="update-button">Update Item</button>
+            <button class="button" id="delete-button">Delete Item</button>
+        </ul>
+    </div>
+    <div style="text-align:center;" >
+        <form type="submit" id="add-item" class="hidden">
+            <label for="add-name">Item Name</label><br>
+            <input autocomplete="off" type="text" id="add-name"><br>
+            <label for="add-weight">Item Weight</label><br>
+            <input autocomplete="off" type="text" id="add-weight"><br>
+            <label for="add-width">Item Width</label><br>
+            <input autocomplete="off" type="add-width" id="add-width"><br>
+            <label for="add-length">Item Length</label><br>
+            <input autocomplete="off" type="text" id="add-length"><br>
+            <label for="add-height">Item Height</label><br>
+            <input autocomplete="off" type="text" id="add-height"><br>
+            <button class="button" id="submit-add">Add Item</button>
+        </form>
+    </div>
+
+    <div style="text-align:center;" >
+        <form type="submit" id="delete-item" class="hidden">
+            <label for="delete-name">Item Name</label><br>
+            <input autocomplete="off" type="text" id="delete-name"><br>
+            <button class="button" id="submit-delete">Delete Item</button>
+        </form>
+    </div>
+
+    <div style="text-align:center;" >
+        <form type="submit" id="update-item" class="hidden">
+            <label for="update-name">Item Name</label><br>
+            <input autocomplete="off" type="text" id="update-name"><br>
+            <label for="update-weight">Item Weight</label><br>
+            <input autocomplete="off" type="text" id="update-weight"><br>
+            <label for="update-width">Item Width</label><br>
+            <input autocomplete="off" type="add-width" id="update-width"><br>
+            <label for="update-length">Item Length</label><br>
+            <input autocomplete="off" type="text" id="update-length"><br>
+            <label for="update-height">Item Height</label><br>
+            <input autocomplete="off" type="text" id="update-height"><br>
+            <button class="button" id="submit-update">Update Item</button>
+        </form>
+    </div>
+
+</body>
+</html>
+<script> 
+
+    $(document).ready(function (e){
+        $.ajax({
+            url: 'requests.php',
+            type: 'POST',
+            data: {
+                'action': 'get_inventory'
+            },
+            success: function (data){
+                let inventory = JSON.parse(data);
+                loadTable(inventory);
+            }
+        });
+    });
+    
+    $('#submit-add').click(function(e){
+        let name = document.getElementById('add-name').value;
+        let weight = document.getElementById('add-weight').value;
+        let width = document.getElementById('add-width').value;
+        let length = document.getElementById('add-length').value;
+        let height = document.getElementById('add-height').value;
+        $.ajax({
+            url: 'requests.php', 
+            type: 'post',
+            data: {
+                'action':'add_item',
+                'name': name,
+                'weight': weight,
+                'width': width,
+                'length': length,
+                'height': height,
+            },
+            success:function (data){
+                let message = JSON.parse(data);
+                if('error' in message){
+                   alert(message['error']);
+                }
+                else{ 
+                    $('#inventory tr').empty();
+                    let inventory = JSON.parse(data);
+                    loadTable(inventory);
+                    alert("Item successfully added");
+               }
+            },
+        });
+        e.preventDefault();
+        $('#add-item').addClass('hidden').trigger("reset");
+    });
+
+    $('#submit-update').click(function(e){
+        let name = document.getElementById('update-name').value;
+        let weight = document.getElementById('update-weight').value;
+        let width = document.getElementById('update-width').value;
+        let length = document.getElementById('update-length').value;
+        let height = document.getElementById('update-height').value;
+        $.ajax({
+            url: 'requests.php', 
+            type: 'post',
+            data: {
+                'action':'update_item',
+                'name': name,
+                'weight': weight,
+                'width': width,
+                'length': length,
+                'height': height,
+            },
+            success:function (data){
+                let message = JSON.parse(data);
+                if('error' in message){
+                   alert(message['error']);
+                }
+                else{ 
+                    $('#inventory tr').empty();
+                    let inventory = JSON.parse(data);
+                    loadTable(inventory);
+                    alert("Item successfully updated");
+               }
+            },
+        });
+        e.preventDefault();
+        $('#update-item').addClass('hidden').trigger("reset");
+    });
+
+    $('#submit-delete').click(function(e){
+        let name = document.getElementById('delete-name').value;
+        $.ajax({
+            url: 'requests.php', 
+            type: 'post',
+            data: {
+                'action':'delete_item',
+                'name': name,
+            },
+            success: function(data){
+                let inventory = JSON.parse(data);
+                if('error' in inventory){
+                   alert(inventory['error']);
+                }
+                else{
+                    $('#inventory tr').empty();
+                    let inventory = JSON.parse(data);
+                    loadTable(inventory);  
+                    alert("Item successfully deleted");
+                }
+            }
+        });
+        e.preventDefault();
+        $('#delete-item').addClass('hidden').trigger("reset");
+    });
+
+    function loadTable(inventory){
+        for(let i in inventory){
+            let row = "<tr><td>" + inventory[i]['name'] + "</td><td>" + inventory[i]['weight'] + "</td><td>" + inventory[i]['width'] 
+                + "</td><td>" + inventory[i]['length'] + "</td><td>" + inventory[i]['height'] + "</td></tr>";
+            $('#inventory').append(row);
+        }
+    }
+
+    //button functions to show forms
+    $('#add-button').click(function(e){
+        $('#add-item').removeClass('hidden');
+        $('#delete-item').addClass('hidden').trigger("reset");
+        $('#update-item').addClass('hidden').trigger("reset");
+    });
+
+    $('#delete-button').click(function(e){
+        $('#delete-item').removeClass('hidden');
+        $('#update-item').addClass('hidden').trigger("reset");
+        $('#add-item').addClass('hidden').trigger("reset");
+    });
+
+    $('#update-button').click(function(e){
+        $('#update-item').removeClass('hidden');
+        $('#delete-item').addClass('hidden').trigger("reset");
+        $('#add-item').addClass('hidden').trigger("reset");
+    });
+</script>
